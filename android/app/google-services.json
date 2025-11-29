@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1037162977977",
+    "project_id": "koc-18421-webs",
+    "storage_bucket": "koc-18421-webs.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1037162977977:android:9a8ea49e2735ce9dc9d968",
+        "android_client_info": {
+          "package_name": "com.example.koc_council_18421"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJDEfjVmrQT6_A-EK7gLgVZry78Tu8_S4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
