@@ -108,13 +108,18 @@ class _MyHomePageState extends State<MyHomePage> {
                           enlargeCenterPage: true)),
                   TableCalendar(
                     // include Oratory events as well
-                    firstDay: DateTime.now(),
+                    firstDay: DateTime.utc(2025, 10, 1),
                     focusedDay: DateTime.now(),
                     lastDay: DateTime.now().add(const Duration(days: 365)),
                     selectedDayPredicate: (day) {
                       return isSameDay(selectedDay, day);
                     },
                     onDaySelected: _onDaySelected,
+                    availableCalendarFormats: const {
+                      CalendarFormat.month: 'Month',
+                      CalendarFormat.twoWeeks: '2 Weeks',
+                      CalendarFormat.week: 'Week',
+                    },
                   ),
                 ],
               )),
