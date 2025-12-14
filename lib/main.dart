@@ -1,8 +1,10 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'package:koc_council_website/calendarEvents/events.dart';
+import 'firebase/firebase_options.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'database/data_reader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +39,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   DateTime selectedDay = DateTime.now();
   DateTime focusedDay = DateTime.now();
+
+  Map<DateTime, List<Events>> _events = {};
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
