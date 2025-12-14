@@ -42,13 +42,21 @@ class _MyHomePageState extends State<MyHomePage> {
   late ValueNotifier<List<Events>> _selectedEvents;
 
   List<Events> _events = [
-    Events(date: DateTime(2025, 11, 1), title: "Tootsie roll drive"),
+    Events(
+        date: DateTime(2025, 11, 1),
+        title: "Tootsie roll drive",
+        description:
+            "Charity drive for the knights council of Old Saint Patrick's Oratory; proceeds go to local charities for those with developmental disabilities. God bless!"),
     Events(
         date: DateTime(2025, 11, 22),
-        title: "Canon Bivouli's Anniversary Mass"),
+        title: "Canon Bivouli's Anniversary Mass",
+        description:
+            "Come join us for a special anniversary Mass to celebrate Canon Bivouli's 10th anniversary of his Ordination. God bless!"),
     Events(
         date: DateTime(2025, 12, 18),
-        title: "Knights Christmas Movie Night -  It's a Wonderful Life")
+        title: "Knights Christmas Movie Night -  It's a Wonderful Life",
+        description:
+            "Join us for a special movie night with the Knights council of Old Saint Patrick's Oratory. We will be showing 'It's a Wonderful Life' at the Parish Hall. We will have popcorn and potluck style dishes. God bless!"),
   ];
 
   @override
@@ -56,10 +64,9 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     selectedDay = focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(selectedDay));
-  }
-
-  _MyHomePageState() {
-    _events.forEach((event) => setEvent(event));
+    for (var event in _events) {
+      setEvent(event);
+    }
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -159,8 +166,24 @@ class _MyHomePageState extends State<MyHomePage> {
                             return ListView.builder(
                                 itemCount: value.length,
                                 itemBuilder: (context, index) {
-                                  return ListTile(
-                                      title: Text(value[index].title));
+                                  return AlertDialog(
+                                      title: Text(value[index].title,
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary)),
+                                      content: Text(
+                                          "Event Date: ${value[index].date}"),
+                                      actions: <Widget>[
+                                        TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context)
+                                                  .pop(); // Close the dialog
+                                            },
+                                            child: const Text('X')),
+                                      ]);
                                 });
                           }))
                 ],
