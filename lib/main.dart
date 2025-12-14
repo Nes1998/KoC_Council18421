@@ -39,8 +39,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   DateTime selectedDay = DateTime.now();
   DateTime focusedDay = DateTime.now();
+  late ValueNotifier<List<Events>> _selectedEvents;
 
-  List<Events> _selectedEvents = [
+  List<Events> _events = [
     Events(date: DateTime(2025, 11, 1), title: "Tootsie roll drive"),
     Events(
         date: DateTime(2025, 11, 22),
@@ -50,17 +51,28 @@ class _MyHomePageState extends State<MyHomePage> {
         title: "Knights Christmas Movie Night -  It's a Wonderful Life")
   ];
 
-  _MyHomePageState() {
-    _selectedEvents.forEach((event) => setEvent(event));
+  @override
+  void initState() {
+    super.initState();
+    selectedDay = focusedDay;
+    _selectedEvents = ValueNotifier(_getEventsForDay(selectedDay));
   }
 
-  Map<DateTime, List<Events>> _events = {};
+  _MyHomePageState() {
+    _events.forEach((event) => setEvent(event));
+  }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
       this.selectedDay = selectedDay;
       this.focusedDay = focusedDay;
+      _selectedEvents.value = _getEventsForDay(selectedDay);
     });
+  }
+
+  List<Events> _getEventsForDay(DateTime day) {
+    // retrive events for the selected day from the database
+    return _events.where((event) => isSameDay(event.date, day)).toList();
   }
 
   @override
@@ -138,7 +150,19 @@ class _MyHomePageState extends State<MyHomePage> {
                       CalendarFormat.twoWeeks: '2 Weeks',
                       CalendarFormat.week: 'Week',
                     },
+                    eventLoader: _getEventsForDay,
                   ),
+                  Expanded(
+                      child: ValueListenableBuilder(
+                          valueListenable: _selectedEvents,
+                          builder: (context, value, _) {
+                            return ListView.builder(
+                                itemCount: value.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                      title: Text(value[index].title));
+                                });
+                          }))
                 ],
               )),
         ),
