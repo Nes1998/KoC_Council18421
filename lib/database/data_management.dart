@@ -3,7 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 Future<Object?> getEventDetails() async {
   // Initialize Firebase Realtime Database reference
 
-  DatabaseReference eventRef = FirebaseDatabase.instance.ref("/");
+  DatabaseReference eventRef = FirebaseDatabase.instance.ref("events");
 
   DataSnapshot snapshot = await eventRef.get();
 
@@ -19,4 +19,17 @@ Future<Object?> getEventDetails() async {
 
     throw Exception("Event details do not exist");
   }
+}
+
+void setEvent(Object events) async {
+  // Initialize Firebase Realtime Database reference
+  DatabaseReference eventRef = FirebaseDatabase.instance.ref("events");
+
+  await eventRef.set(events).then((value) {
+    // Handle the success case
+    print("Event details updated successfully");
+  }).catchError((error) {
+    // Handle any errors that occur during the update
+    print("Error updating event details: $error");
+  });
 }

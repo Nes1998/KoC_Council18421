@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:koc_council_website/calendarEvents/events.dart';
 import 'firebase/firebase_options.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'database/data_reader.dart';
+import 'database/data_management.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +39,20 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   DateTime selectedDay = DateTime.now();
   DateTime focusedDay = DateTime.now();
+
+  List<Events> _selectedEvents = [
+    Events(date: DateTime(2025, 11, 1), title: "Tootsie roll drive"),
+    Events(
+        date: DateTime(2025, 11, 22),
+        title: "Canon Bivouli's Anniversary Mass"),
+    Events(
+        date: DateTime(2025, 12, 18),
+        title: "Knights Christmas Movie Night -  It's a Wonderful Life")
+  ];
+
+  _MyHomePageState() {
+    _selectedEvents.forEach((event) => setEvent(event));
+  }
 
   Map<DateTime, List<Events>> _events = {};
 
