@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:koc_council_website/calendarEvents/events.dart';
 import 'firebase/firebase_options.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'database/data_management.dart';
+import 'firebase/data_management.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +39,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   DateTime selectedDay = DateTime.now();
   DateTime focusedDay = DateTime.now();
+  CalendarFormat _calendarFormat = CalendarFormat.month;
   late ValueNotifier<List<Events>> _selectedEvents;
 
   List<Events> _events = [
@@ -67,6 +68,13 @@ class _MyHomePageState extends State<MyHomePage> {
     for (var event in _events) {
       setEvent(event);
     }
+  }
+
+  void onFormatChanged(CalendarFormat format) {
+    if (_calendarFormat == format) return;
+    setState(() {
+      _calendarFormat = format;
+    });
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -152,14 +160,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       return isSameDay(selectedDay, day);
                     },
                     onDaySelected: _onDaySelected,
-                    availableCalendarFormats: const {
-                      CalendarFormat.month: 'Month',
-                      CalendarFormat.twoWeeks: '2 Weeks',
-                      CalendarFormat.week: 'Week',
-                    },
+                    onFormatChanged: onFormatChanged,
                     eventLoader: _getEventsForDay,
                   ),
                   Expanded(
+                      // Displays the events for the selected day
                       child: ValueListenableBuilder(
                           valueListenable: _selectedEvents,
                           builder: (context, value, _) {
