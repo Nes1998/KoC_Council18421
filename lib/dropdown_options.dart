@@ -1,54 +1,35 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
 
-typedef DropdownEntries = DropdownMenuEntry<DropdownOptions>;
+class DateDropDownMenu extends StatefulWidget {
+  final void Function(CalendarFormat?) onChanged;
 
-enum DropdownOptions {
-  week("week"),
-  twoWeeks("2 weeks"),
-  month("month"),
-  year("year");
-
-  const DropdownOptions(this.title);
-  final String title;
-
-  static final List<DropdownEntries> menuEntries =
-      UnmodifiableListView<DropdownEntries>(values.map<DropdownEntries>(
-          (DropdownOptions entry) => DropdownEntries(
-              value: entry,
-              label: entry.title,
-              style: MenuItemButton.styleFrom(
-                  foregroundColor: Colors.lightBlueAccent))));
-}
-
-class DropdownMenu extends StatefulWidget {
-  const DropdownMenu({super.key});
+  DateDropDownMenu({super.key, required this.onChanged});
 
   @override
-  State<DropdownMenu> createState() => _DropdownMenuState();
+  State<DateDropDownMenu> createState() => _DateDropDownMenuState();
 }
 
-class _DropdownMenuState extends State<DropdownMenu> {
+class _DateDropDownMenuState extends State<DateDropDownMenu> {
   final TextEditingController optionController = TextEditingController();
-  DropdownOptions? selectedOption;
+
+  CalendarFormat selectedOption = CalendarFormat.week;
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButton<DropdownOptions>(
-      value: selectedOption,
-      onChanged: (DropdownOptions? newValue) {
-        setState(() {
-          selectedOption = newValue;
-        });
-      },
-      items: DropdownOptions.menuEntries.map<DropdownMenuItem<DropdownOptions>>(
-          (DropdownMenuEntry<DropdownOptions> entry) {
-        return DropdownMenuItem<DropdownOptions>(
-          value: entry.value,
-          child: Text(entry.label),
-        );
-      }).toList(),
-    );
+    return DropdownButton<CalendarFormat>(
+        value: selectedOption,
+        onChanged: (CalendarFormat? newValue) {
+          setState(() {
+            selectedOption = newValue!;
+            widget.onChanged(newValue);
+          });
+        },
+        items: [
+          DropdownMenuItem(value: CalendarFormat.month, child: Text('Month')),
+          DropdownMenuItem(value: CalendarFormat.week, child: Text('Week')),
+          DropdownMenuItem(
+              value: CalendarFormat.twoWeeks, child: Text('Two Weeks')),
+        ]);
   }
 }

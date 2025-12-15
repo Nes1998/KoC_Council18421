@@ -5,6 +5,7 @@ import 'package:koc_council_website/calendarEvents/events.dart';
 import 'firebase/firebase_options.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'firebase/data_management.dart';
+import 'package:koc_council_website/dropdown_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +40,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   DateTime selectedDay = DateTime.now();
   DateTime focusedDay = DateTime.now();
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  CalendarFormat _calendarFormat = CalendarFormat.twoWeeks;
   late ValueNotifier<List<Events>> _selectedEvents;
 
   List<Events> _events = [
@@ -70,10 +71,29 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void onFormatChanged(CalendarFormat format) {
-    if (_calendarFormat == format) return;
+  void _showEventDialog(Events event) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(event.title),
+          content: Text(event.description),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('X'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void onFormatChanged(CalendarFormat? format) {
     setState(() {
-      _calendarFormat = format;
+      _calendarFormat = format!;
     });
   }
 
@@ -82,6 +102,10 @@ class _MyHomePageState extends State<MyHomePage> {
       this.selectedDay = selectedDay;
       this.focusedDay = focusedDay;
       _selectedEvents.value = _getEventsForDay(selectedDay);
+
+      if (_selectedEvents.value.isNotEmpty) {
+        _showEventDialog(_selectedEvents.value.first);
+      }
     });
   }
 
@@ -136,6 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     placeholder: const AssetImage('assets/images/koc-logo.png'),
                     image: const AssetImage('assets/images/koc-logo.png'),
                     width: constraints.maxWidth * 0.25,
+                    fadeInDuration: const Duration(milliseconds: 100),
                   ),
                   CarouselSlider(
                       items: [
@@ -151,6 +176,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           height: 200.0,
                           autoPlay: true,
                           enlargeCenterPage: true)),
+                  DateDropDownMenu(onChanged: onFormatChanged),
                   TableCalendar(
                     // include Oratory events as well
                     firstDay: DateTime.utc(2025, 10, 1),
@@ -162,35 +188,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     onDaySelected: _onDaySelected,
                     onFormatChanged: onFormatChanged,
                     eventLoader: _getEventsForDay,
+                    calendarFormat: _calendarFormat,
                   ),
-                  Expanded(
-                      // Displays the events for the selected day
-                      child: ValueListenableBuilder(
-                          valueListenable: _selectedEvents,
-                          builder: (context, value, _) {
-                            return ListView.builder(
-                                itemCount: value.length,
-                                itemBuilder: (context, index) {
-                                  return AlertDialog(
-                                      title: Text(value[index].title,
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary)),
-                                      content: Text(
-                                          "Event Date: ${value[index].date}"),
-                                      actions: <Widget>[
-                                        TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context)
-                                                  .pop(); // Close the dialog
-                                            },
-                                            child: const Text('X')),
-                                      ]);
-                                });
-                          }))
                 ],
               )),
         ),
