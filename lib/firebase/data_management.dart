@@ -1,4 +1,5 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:koc_council_website/calendarEvents/events.dart';
 
 Future<Object?> getEventDetails() async {
   // Initialize Firebase Realtime Database reference
@@ -11,6 +12,7 @@ Future<Object?> getEventDetails() async {
     // Process the event details
     // Example: Extract specific fields from the snapshot and return them
     // ...
+    print("Event details retrieved successfully");
 
     return snapshot.value;
   } else {
@@ -21,11 +23,15 @@ Future<Object?> getEventDetails() async {
   }
 }
 
-void setEvent(Object events) async {
+void setEvent(Events event) async {
   // Initialize Firebase Realtime Database reference
   DatabaseReference eventRef = FirebaseDatabase.instance.ref("events");
 
-  await eventRef.set(events).then((value) {
+  await eventRef.push().set({
+    "date": event.date.toIso8601String(),
+    "title": event.title,
+    "description": event.description,
+  }).then((value) {
     // Handle the success case
     print("Event details updated successfully");
   }).catchError((error) {

@@ -5,7 +5,6 @@ import 'package:koc_council_website/calendarEvents/events.dart';
 import 'firebase/firebase_options.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'firebase/data_management.dart';
-import 'package:koc_council_website/dropdown_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,48 +42,66 @@ class _MyHomePageState extends State<MyHomePage> {
   CalendarFormat _calendarFormat = CalendarFormat.twoWeeks;
   late ValueNotifier<List<Events>> _selectedEvents;
 
-  List<Events> _events = [
-    Events(
-        date: DateTime(2025, 11, 1),
-        title: "Tootsie roll drive",
-        description:
-            "Charity drive for the knights council of Old Saint Patrick's Oratory; proceeds go to local charities for those with developmental disabilities. God bless!"),
-    Events(
-        date: DateTime(2025, 11, 22),
-        title: "Canon Bivouli's Anniversary Mass",
-        description:
-            "Come join us for a special anniversary Mass to celebrate Canon Bivouli's 10th anniversary of his Ordination. God bless!"),
-    Events(
-        date: DateTime(2025, 12, 18),
-        title: "Knights Christmas Movie Night -  It's a Wonderful Life",
-        description:
-            "Join us for a special movie night with the Knights council of Old Saint Patrick's Oratory. We will be showing 'It's a Wonderful Life' at the Parish Hall. We will have popcorn and potluck style dishes. God bless!"),
-  ];
+  List<Events> _events = [];
+
+  // List<Events> _events = [];
 
   @override
   void initState() {
     super.initState();
-    selectedDay = focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(selectedDay));
-    for (var event in _events) {
-      setEvent(event);
-    }
+    getEventDetails().then((data) {
+      // Process the retrieved event db and update _events list
+
+      if (data == null) {
+        return;
+      } else if (data is Map) {
+        data.forEach((key, value) {
+          DateTime eventDate = DateTime.parse(value['date']);
+          String eventTitle = value['title'];
+          String eventDescription = value['description'];
+
+          Events event = Events(
+              date: eventDate,
+              title: eventTitle,
+              description: eventDescription);
+          if (!_events.contains(event)) {
+            _events.add(event);
+          }
+        });
+      }
+    });
   }
 
-  void _showEventDialog(Events event) {
+  void _showEventDialog(List<Events> events) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(event.title),
-          content: Text(event.description),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
+          title: Text(
+              'Events for ${selectedDay.toIso8601String().substring(0, 10)}'),
+          content: SizedBox(
+            width: double.maxFinite, // Set width to maximum available
+            height: 400, // Fix the height of the dialog
+            child: ListView.builder(
+              shrinkWrap: true, // Makes list view take only needed space
+              itemCount: events.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(events[index].title),
+                  subtitle: Text(events[index].description),
+                );
               },
-              child: Text('X'),
             ),
+          ),
+          actions: [
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style:
+                    ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                child: Text('X')),
           ],
         );
       },
@@ -104,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _selectedEvents.value = _getEventsForDay(selectedDay);
 
       if (_selectedEvents.value.isNotEmpty) {
-        _showEventDialog(_selectedEvents.value.first);
+        _showEventDialog(_selectedEvents.value);
       }
     });
   }
@@ -176,11 +193,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           height: 200.0,
                           autoPlay: true,
                           enlargeCenterPage: true)),
-                  DateDropDownMenu(onChanged: onFormatChanged),
                   TableCalendar(
                     // include Oratory events as well
                     firstDay: DateTime.utc(2025, 10, 1),
-                    focusedDay: DateTime.now(),
+                    focusedDay: focusedDay,
                     lastDay: DateTime.now().add(const Duration(days: 365)),
                     selectedDayPredicate: (day) {
                       return isSameDay(selectedDay, day);
@@ -189,6 +205,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     onFormatChanged: onFormatChanged,
                     eventLoader: _getEventsForDay,
                     calendarFormat: _calendarFormat,
+                    calendarStyle: CalendarStyle(
+                      todayDecoration: BoxDecoration(
+                        color: Colors.blueAccent,
+                        shape: BoxShape.circle,
+                      ),
+                      selectedDecoration: BoxDecoration(
+                        color: Colors.orangeAccent,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                   ),
                 ],
               )),
