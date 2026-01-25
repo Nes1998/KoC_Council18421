@@ -157,67 +157,72 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             )),
         body: Center(
-          child: Container(
-              color: Colors.blue[50],
-              constraints: BoxConstraints(
-                maxWidth: constraints.maxWidth,
-                maxHeight: constraints.maxHeight,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Faith, Community, Family, Life',
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                          fontFamily: 'Montserrat'),
-                      selectionColor: Color(0xFF6200EE)),
-                  FadeInImage(
-                    placeholder: const AssetImage('assets/images/koc-logo.png'),
-                    image: const AssetImage('assets/images/koc-logo.png'),
-                    width: constraints.maxWidth * 0.25,
-                    fadeInDuration: const Duration(milliseconds: 100),
+          child: ListView(
+            children: [
+              Container(
+                  color: Colors.blue[50],
+                  constraints: BoxConstraints(
+                    maxWidth: constraints.maxWidth,
+                    maxHeight: constraints.maxHeight,
                   ),
-                  CarouselSlider(
-                      items: [
-                        Image.asset('assets/images/1000000300.jpg'),
-                        Image.asset('assets/images/1000000301.jpg'),
-                        Image.asset('assets/images/1000000302.jpg'),
-                        Image.asset('assets/images/1000000403.jpg'),
-                        Image.asset('assets/images/1000000404.jpg'),
-                        Image.asset('assets/images/1000000405.jpg'),
-                        Image.asset('assets/images/1000000407.jpg'),
-                      ],
-                      options: CarouselOptions(
-                          height: 200.0,
-                          autoPlay: true,
-                          enlargeCenterPage: true)),
-                  TableCalendar(
-                    // include Oratory events as well
-                    firstDay: DateTime.utc(2025, 10, 1),
-                    focusedDay: focusedDay,
-                    lastDay: DateTime.now().add(const Duration(days: 365)),
-                    selectedDayPredicate: (day) {
-                      return isSameDay(selectedDay, day);
-                    },
-                    onDaySelected: _onDaySelected,
-                    onFormatChanged: onFormatChanged,
-                    eventLoader: _getEventsForDay,
-                    calendarFormat: _calendarFormat,
-                    calendarStyle: CalendarStyle(
-                      todayDecoration: BoxDecoration(
-                        color: Colors.blueAccent,
-                        shape: BoxShape.circle,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Faith, Community, Family, Life',
+                          style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                              fontFamily: 'Montserrat'),
+                          selectionColor: Color(0xFF6200EE)),
+                      FadeInImage(
+                        placeholder:
+                            const AssetImage('assets/images/koc-logo.png'),
+                        image: const AssetImage('assets/images/koc-logo.png'),
+                        width: constraints.maxWidth * 0.25,
+                        fadeInDuration: const Duration(milliseconds: 100),
                       ),
-                      selectedDecoration: BoxDecoration(
-                        color: Colors.orangeAccent,
-                        shape: BoxShape.circle,
+                      CarouselSlider(
+                          items: [
+                            Image.asset('assets/images/1000000300.jpg'),
+                            Image.asset('assets/images/1000000301.jpg'),
+                            Image.asset('assets/images/1000000302.jpg'),
+                            Image.asset('assets/images/1000000403.jpg'),
+                            Image.asset('assets/images/1000000404.jpg'),
+                            Image.asset('assets/images/1000000405.jpg'),
+                            Image.asset('assets/images/1000000407.jpg'),
+                          ],
+                          options: CarouselOptions(
+                              height: 200.0,
+                              autoPlay: true,
+                              enlargeCenterPage: true)),
+                      TableCalendar(
+                        // include Oratory events as well
+                        firstDay: DateTime.utc(2025, 10, 1),
+                        focusedDay: focusedDay,
+                        lastDay: DateTime.now().add(const Duration(days: 365)),
+                        selectedDayPredicate: (day) {
+                          return isSameDay(selectedDay, day);
+                        },
+                        onDaySelected: _onDaySelected,
+                        onFormatChanged: onFormatChanged,
+                        eventLoader: _getEventsForDay,
+                        calendarFormat: _calendarFormat,
+                        calendarStyle: CalendarStyle(
+                          todayDecoration: BoxDecoration(
+                            color: Colors.blueAccent,
+                            shape: BoxShape.circle,
+                          ),
+                          selectedDecoration: BoxDecoration(
+                            color: Colors.orangeAccent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-              )),
+                    ],
+                  )),
+            ],
+          ),
         ),
       );
     });
