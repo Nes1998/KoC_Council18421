@@ -41,13 +41,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDMsi6tbABItvTJMPt-yS2vqGm0C03C_o8',
-    appId: '1:1037162977977:web:ff3bc2f9ff9eebf1c9d968',
-    messagingSenderId: '1037162977977',
-    projectId: 'koc-18421-webs',
-    authDomain: 'koc-18421-webs.firebaseapp.com',
-    storageBucket: 'koc-18421-webs.firebasestorage.app',
-  );
+      apiKey: "AIzaSyDMsi6tbABItvTJMPt-yS2vqGm0C03C_o8",
+      authDomain: "koc-18421-webs.firebaseapp.com",
+      databaseURL: "https://koc-18421-webs-default-rtdb.firebaseio.com",
+      projectId: "koc-18421-webs",
+      storageBucket: "koc-18421-webs.firebasestorage.app",
+      messagingSenderId: "1037162977977",
+      appId: "1:1037162977977:web:ff3bc2f9ff9eebf1c9d968");
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAJDEfjVmrQT6_A-EK7gLgVZry78Tu8_S4',

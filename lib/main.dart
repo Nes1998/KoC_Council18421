@@ -2,13 +2,13 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:koc_council_website/calendarEvents/events.dart';
-import 'firebase/firebase_options.dart';
+import 'package:koc_council_website/firebase/firebase_options.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'firebase/data_management.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
   runApp(const MyApp());
 }
 
@@ -151,6 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
             // the App.build method, and use it to set our appbar title.
             title: Text(
               widget.title,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Times New Roman',
                 color: Colors.yellow[300],
@@ -158,6 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
             )),
         body: Center(
           child: ListView(
+            shrinkWrap: true,
             children: [
               Container(
                   color: Colors.blue[50],
@@ -167,6 +169,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text('Faith, Community, Family, Life',
                           style: TextStyle(
@@ -179,7 +183,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         placeholder:
                             const AssetImage('assets/images/koc-logo.png'),
                         image: const AssetImage('assets/images/koc-logo.png'),
-                        width: constraints.maxWidth * 0.25,
+                        width: constraints.maxHeight < 600
+                            ? constraints.maxWidth * 0.25
+                            : constraints.maxWidth * 0.05,
                         fadeInDuration: const Duration(milliseconds: 100),
                       ),
                       CarouselSlider(
