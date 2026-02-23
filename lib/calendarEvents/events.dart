@@ -1,9 +1,14 @@
 class Events {
+  String id = "";
   DateTime date = DateTime.now();
   String title = "";
   String description = "";
 
-  Events({required this.date, required this.title, this.description = ""});
+  Events(
+      {required this.id,
+      required this.date,
+      required this.title,
+      this.description = ""});
 
   void displayEvent() {
     print("Event: $title");
@@ -17,7 +22,7 @@ class Events {
     description = newDescription; // Update the description if provided
   }
 
-  void deleteEvent() {
+  void deleteEvent(String eventId) {
     // Implement the logic to delete the event
     print("Event deleted: $title");
   }

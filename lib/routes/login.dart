@@ -103,8 +103,10 @@ class _LoginFormState extends State<LoginForm> {
                 )
                     .then((value) {
                   // Handle successful login
+                  Navigator.pushNamed(context, "/");
                 }).catchError((error) {
                   // Handle login error
+                  print('Error: $error');
                 });
               }
             },

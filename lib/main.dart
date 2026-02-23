@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:koc_council_website/calendarEvents/events.dart';
 import 'package:koc_council_website/firebase/firebase_options.dart';
+import 'package:koc_council_website/google_api.dart';
 import 'package:koc_council_website/routes/login.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'firebase/data_management.dart';
@@ -11,6 +12,7 @@ import 'dart:typed_data';
 import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_saver/file_saver.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,11 +52,13 @@ class _MyHomePageState extends State<MyHomePage> {
   DateTime focusedDay = DateTime.now();
   CalendarFormat _calendarFormat = CalendarFormat.twoWeeks;
   late ValueNotifier<List<Events>> _selectedEvents;
+  GoogleHttpClient? _googleHttpClient = GoogleHttpClient({
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  });
+  Events? selectedEvent;
 
   List<Events> _events = [];
-
-  String _csvDownloadResults = '';
-
   @override
   void initState() {
     super.initState();
@@ -71,6 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
           String eventDescription = value['description'];
 
           Events event = Events(
+              id: key,
               date: eventDate,
               title: eventTitle,
               description: eventDescription);
@@ -80,6 +85,8 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       }
     });
+    selectedEvent =
+        _selectedEvents.value.isNotEmpty ? _selectedEvents.value[0] : null;
   }
 
   /// Exports the given list of events to a CSV file.
@@ -112,17 +119,9 @@ class _MyHomePageState extends State<MyHomePage> {
         mimeType: MimeType.csv,
       );
 
-      setState(() {
-        _csvDownloadResults = 'CSV file saved successfully at $path';
-      });
-
       return true;
     } catch (e) {
       print('Error saving CSV file: $e');
-
-      setState(() {
-        _csvDownloadResults = 'Error saving CSV file: $e';
-      });
 
       return false;
     }
@@ -145,6 +144,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 return ListTile(
                   title: Text(events[index].title),
                   subtitle: Text(events[index].description),
+                  selectedColor: Colors.redAccent,
+                  selected: selectedEvent == events[index],
+                  onTap: () {
+                    setState(() {
+                      selectedEvent = events[index];
+                    });
+                  },
                 );
               },
             ),
@@ -159,20 +165,98 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Text('X')),
             ElevatedButton(
                 onPressed: () {
-                  exportEventsToCSV(events);
+                  if (selectedEvent == null) return;
+                  try {
+                    _googleHttpClient?.insertGoogleCalendarEvent(
+                        selectedEvent!.date,
+                        selectedEvent!.title,
+                        selectedEvent!.description,
+                        1);
+                  } catch (e) {
+                    print('Error adding event to Google Calendar: $e');
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.greenAccent),
-                child: Text('Export events to CSV')),
-            if (_csvDownloadResults.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(_csvDownloadResults),
-              ),
+                child: Text('Add to your google calendar')),
+            if (FirebaseAuth.instance.currentUser != null)
+              ElevatedButton(
+                  onPressed: () {
+                    addEvents(selectedDay);
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent),
+                  child: Text('Add Events')),
+            if (FirebaseAuth.instance.currentUser != null &&
+                selectedEvent != null)
+              ElevatedButton(
+                  onPressed: () {
+                    if (selectedEvent == null) return;
+                    deleteEvent(selectedEvent!.id);
+                    setState(() {
+                      _events.remove(selectedEvent);
+                      _selectedEvents.value.remove(selectedEvent);
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrangeAccent),
+                  child: Text('Delete Events'))
           ],
         );
       },
     );
+  }
+
+  void addEvents(DateTime eventDate) {
+    String title = '';
+    String description = '';
+    DateTime date = eventDate;
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Add Event'),
+            content: Column(
+              children: [
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Event Title'),
+                  onChanged: (value) => title = value,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Event Description'),
+                  onChanged: (value) => description = value,
+                ),
+              ],
+            ),
+            actions: [
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent),
+                  child: Text('Cancel')),
+              ElevatedButton(
+                  onPressed: () {
+                    // Logic to add event
+                    Events newEvent = Events(
+                        id: '',
+                        date: date,
+                        title: title,
+                        description: description);
+                    setEvent(newEvent);
+                    setState(() {
+                      _events.add(newEvent);
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.greenAccent),
+                  child: Text('Add Event')),
+            ],
+          );
+        });
   }
 
   void onFormatChanged(CalendarFormat? format) {
@@ -189,6 +273,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
       if (_selectedEvents.value.isNotEmpty) {
         _showEventDialog(_selectedEvents.value);
+      } else if (FirebaseAuth.instance.currentUser != null) {
+        addEvents(selectedDay);
       }
     });
   }

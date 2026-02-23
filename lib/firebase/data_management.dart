@@ -39,3 +39,16 @@ void setEvent(Events event) async {
     print("Error updating event details: $error");
   });
 }
+
+void deleteEvent(String eventId) async {
+  // Initialize Firebase Realtime Database reference
+  DatabaseReference eventRef = FirebaseDatabase.instance.ref("events/$eventId");
+
+  await eventRef.remove().then((value) {
+    // Handle the success case
+    print("Event deleted successfully");
+  }).catchError((error) {
+    // Handle any errors that occur during the deletion
+    print("Error deleting event: $error");
+  });
+}
