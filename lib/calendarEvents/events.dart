@@ -3,12 +3,14 @@ class Events {
   DateTime date = DateTime.now();
   String title = "";
   String description = "";
+  int duration = 0; // Duration in hours
 
   Events(
       {required this.id,
       required this.date,
       required this.title,
-      this.description = ""});
+      this.description = '',
+      this.duration = 0});
 
   void displayEvent() {
     print("Event: $title");

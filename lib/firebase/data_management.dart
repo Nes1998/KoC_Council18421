@@ -31,6 +31,7 @@ void setEvent(Events event) async {
     "date": event.date.toIso8601String(),
     "title": event.title,
     "description": event.description,
+    "duration": event.duration,
   }).then((value) {
     // Handle the success case
     print("Event details updated successfully");

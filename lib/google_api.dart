@@ -6,7 +6,9 @@ class GoogleApi {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId:
         '1037162977977-3f88207vtvbig3s33eca8tk0li6gk60h.apps.googleusercontent.com',
-    scopes: [calendar.CalendarApi.calendarScope],
+    scopes: [
+      'https://www.googleapis.com/auth/calendar',
+    ],
   );
   Future<GoogleSignInAccount?> _handleSignIn() async {
     try {

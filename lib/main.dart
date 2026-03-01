@@ -7,16 +7,14 @@ import 'package:koc_council_website/google_api.dart';
 import 'package:koc_council_website/routes/login.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'firebase/data_management.dart';
-import 'dart:convert';
-import 'dart:typed_data';
-import 'package:csv/csv.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:file_saver/file_saver.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -56,12 +54,16 @@ class _MyHomePageState extends State<MyHomePage> {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   });
-  Events? selectedEvent;
+  Events? selectedEvent; // Initialize with default values
 
   List<Events> _events = [];
+
+  Events? defaultEvent; // Initialize with default values
+
   @override
   void initState() {
     super.initState();
+
     _selectedEvents = ValueNotifier(_getEventsForDay(selectedDay));
     getEventDetails().then((data) {
       // Process the retrieved event db and update _events list
@@ -73,61 +75,33 @@ class _MyHomePageState extends State<MyHomePage> {
           DateTime eventDate = DateTime.parse(value['date']);
           String eventTitle = value['title'];
           String eventDescription = value['description'];
+          int eventDuration =
+              value['duration'] ?? 0; // Default to 0 if not provided
 
           Events event = Events(
               id: key,
               date: eventDate,
               title: eventTitle,
-              description: eventDescription);
+              description: eventDescription,
+              duration: eventDuration);
           if (!_events.contains(event)) {
             _events.add(event);
           }
         });
+
+        selectedEvent = Events(
+            id: '',
+            date: DateTime.now(),
+            title: '',
+            description: '',
+            duration: 0); // Initialize with default values
       }
     });
-    selectedEvent =
-        _selectedEvents.value.isNotEmpty ? _selectedEvents.value[0] : null;
-  }
-
-  /// Exports the given list of events to a CSV file.
-  /// Returns true if the export was successful, false otherwise.
-  Future<bool> exportEventsToCSV(List<Events> events) async {
-    // Implement the logic to export events to CSV
-    List<List<dynamic>> rows = [];
-
-    for (var event in events) {
-      rows.add([event.date.toIso8601String(), event.title, event.description]);
-    }
-
-    // Convert the rows to CSV string
-    String csvData = const ListToCsvConverter().convert(rows);
-
-    // Convert CSV string to bytes
-    Uint8List bytes = Uint8List.fromList(utf8.encode(csvData));
-
-    try {
-      // Get the directory to save the file
-      final directory = await getDownloadsDirectory();
-      final path = '${directory?.path}/events.csv';
-
-      // Save the CSV file
-      await FileSaver.instance.saveFile(
-        name: 'events',
-        bytes: bytes,
-        filePath: path,
-        fileExtension: 'csv',
-        mimeType: MimeType.csv,
-      );
-
-      return true;
-    } catch (e) {
-      print('Error saving CSV file: $e');
-
-      return false;
-    }
   }
 
   void _showEventDialog(List<Events> events) {
+    events.sort((a, b) => a.date.compareTo(b.date));
+
     showDialog(
       context: context,
       builder: (context) {
@@ -136,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
               'Events for ${selectedDay.toIso8601String().substring(0, 10)}'),
           content: SizedBox(
             width: double.maxFinite, // Set width to maximum available
-            height: 100, // Fix the height of the dialog
+            height: 300, // Fix the height of the dialog
             child: ListView.builder(
               shrinkWrap: true, // Makes list view take only needed space
               itemCount: events.length,
@@ -144,11 +118,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 return ListTile(
                   title: Text(events[index].title),
                   subtitle: Text(events[index].description),
-                  selectedColor: Colors.redAccent,
                   selected: selectedEvent == events[index],
                   onTap: () {
                     setState(() {
                       selectedEvent = events[index];
+                      return;
                     });
                   },
                 );
@@ -165,13 +139,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Text('X')),
             ElevatedButton(
                 onPressed: () {
-                  if (selectedEvent == null) return;
                   try {
                     _googleHttpClient?.insertGoogleCalendarEvent(
                         selectedEvent!.date,
                         selectedEvent!.title,
                         selectedEvent!.description,
-                        1);
+                        selectedEvent!.duration);
                   } catch (e) {
                     print('Error adding event to Google Calendar: $e');
                   }
@@ -187,11 +160,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent),
                   child: Text('Add Events')),
-            if (FirebaseAuth.instance.currentUser != null &&
-                selectedEvent != null)
+            if (FirebaseAuth.instance.currentUser != null)
               ElevatedButton(
                   onPressed: () {
-                    if (selectedEvent == null) return;
                     deleteEvent(selectedEvent!.id);
                     setState(() {
                       _events.remove(selectedEvent);
@@ -211,6 +182,37 @@ class _MyHomePageState extends State<MyHomePage> {
     String title = '';
     String description = '';
     DateTime date = eventDate;
+    TextEditingController dateController = TextEditingController();
+    int duration = 0;
+
+    void selectDate(BuildContext context) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2101),
+      );
+      if (picked != null) {
+        TimeOfDay? pickedTime = await showTimePicker(
+          context: context,
+          initialTime: TimeOfDay.now(),
+        );
+        final DateTime pickedDateTime = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          pickedTime?.hour ?? 0,
+          pickedTime?.minute ?? 0,
+        );
+
+        String? formattedDate =
+            DateFormat('dd/MM/yyyy HH:mm:ss').format(pickedDateTime);
+        setState(() {
+          date = pickedDateTime;
+          dateController.text = formattedDate;
+        });
+      }
+    }
 
     showDialog(
         context: context,
@@ -226,6 +228,40 @@ class _MyHomePageState extends State<MyHomePage> {
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Event Description'),
                   onChanged: (value) => description = value,
+                ),
+                TextFormField(
+                  controller: dateController,
+                  readOnly:
+                      true, // Prevents manual entry and keyboard appearance
+                  decoration: InputDecoration(
+                    labelText: 'Event Date',
+                    hintText: 'DD/MM/YYYY HH:MM:SS',
+                    suffixIcon: Icon(
+                        Icons.calendar_today), // Optional: Add a calendar icon
+                  ),
+                  onTap: () {
+                    selectDate(context);
+                  },
+                  validator: (value) {
+                    // Optional: Add form validation
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the event date';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  decoration:
+                      InputDecoration(labelText: 'Event Duration (hours)'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    // Optional: Add validation for numeric input
+                    if (int.tryParse(value) != null) {
+                      setState(() {
+                        duration = int.parse(value);
+                      });
+                    }
+                  },
                 ),
               ],
             ),
@@ -244,7 +280,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         id: '',
                         date: date,
                         title: title,
-                        description: description);
+                        description: description,
+                        duration: duration);
                     setEvent(newEvent);
                     setState(() {
                       _events.add(newEvent);
